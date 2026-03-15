@@ -5,14 +5,17 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./TBillToken.sol";
 
 /**
  * @title YieldVault
  * @dev Vault for users to deposit stablecoins and mint TBILL tokens
  */
-contract YieldVault is AccessControl, ReentrancyGuard {
+contract YieldVault is AccessControl, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
+
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     IERC20 public stablecoin;
     TBillToken public tbillToken;
@@ -24,13 +27,14 @@ contract YieldVault is AccessControl, ReentrancyGuard {
         stablecoin = IERC20(_stablecoin);
         tbillToken = TBillToken(_tbillToken);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(PAUSER_ROLE, msg.sender);
     }
 
     /**
      * @notice Deposit stablecoins to mint TBILL tokens
      * @param amount Amount of stablecoins to deposit
      */
-    function deposit(uint256 amount) external nonReentrant {
+    function deposit(uint256 amount) external nonReentrant whenNotPaused {
         require(amount > 0, "Amount must be > 0");
         require(tbillToken.isWhitelisted(msg.sender) || !tbillToken.requiresKYC(), "KYC required");
 
@@ -51,7 +55,7 @@ contract YieldVault is AccessControl, ReentrancyGuard {
      * @notice Withdraw stablecoins by burning TBILL tokens
      * @param shares Amount of TBILL to burn
      */
-    function withdraw(uint256 shares) external nonReentrant {
+    function withdraw(uint256 shares) external nonReentrant whenNotPaused {
         require(shares > 0, "Shares must be > 0");
         require(tbillToken.balanceOf(msg.sender) >= shares, "Insufficient balance");
 
@@ -67,5 +71,19 @@ contract YieldVault is AccessControl, ReentrancyGuard {
         stablecoin.safeTransfer(msg.sender, amountToReturn);
 
         emit Withdrawn(msg.sender, amountToReturn, shares);
+    }
+
+    /**
+     * @notice Pauses deposits and withdrawals
+     */
+    function pause() external onlyRole(PAUSER_ROLE) {
+        _pause();
+    }
+
+    /**
+     * @notice Unpauses deposits and withdrawals
+     */
+    function unpause() external onlyRole(PAUSER_ROLE) {
+        _unpause();
     }
 }

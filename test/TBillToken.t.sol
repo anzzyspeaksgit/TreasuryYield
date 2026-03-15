@@ -106,4 +106,25 @@ contract TBillTokenTest is Test {
         tbill.transfer(user2, 500 * 1e18);
         vm.stopPrank();
     }
+
+    function test_YieldVaultPause() public {
+        vm.startPrank(admin);
+        vault.pause();
+        vm.stopPrank();
+        
+        vm.startPrank(user);
+        stablecoin.approve(address(vault), 1000 * 1e18);
+        vm.expectRevert("Pausable: paused");
+        vault.deposit(1000 * 1e18);
+        vm.stopPrank();
+        
+        vm.startPrank(admin);
+        vault.unpause();
+        vm.stopPrank();
+        
+        vm.startPrank(user);
+        vault.deposit(1000 * 1e18);
+        assertEq(tbill.balanceOf(user), 1000 * 1e18);
+        vm.stopPrank();
+    }
 }
