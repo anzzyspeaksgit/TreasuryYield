@@ -114,7 +114,7 @@ contract TBillTokenTest is Test {
 
         vm.startPrank(user);
         stablecoin.approve(address(vault), 1000 * 1e18);
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
         vault.deposit(1000 * 1e18);
         vm.stopPrank();
 

@@ -22,7 +22,7 @@ contract TBillKeeper is AutomationCompatibleInterface, Ownable {
     uint256 public updateInterval;
     uint256 public lastTimeStamp;
 
-    constructor(address _tbillToken, address _tbillOracle, uint256 _updateInterval) {
+    constructor(address _tbillToken, address _tbillOracle, uint256 _updateInterval) Ownable(msg.sender) {
         tbillToken = TBillToken(_tbillToken);
         tbillOracle = TBillOracle(_tbillOracle);
         updateInterval = _updateInterval;
