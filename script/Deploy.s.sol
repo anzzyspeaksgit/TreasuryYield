@@ -5,6 +5,7 @@ import "forge-std/Script.sol";
 import "../src/TBillToken.sol";
 import "../src/YieldVault.sol";
 import "../src/TBillOracle.sol";
+import "../src/TBillKeeper.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockStablecoin is ERC20 {
@@ -28,8 +29,16 @@ contract Deploy is Script {
         // 3. Deploy YieldVault
         YieldVault vault = new YieldVault(address(stablecoin), address(tbill));
 
-        // 4. Grant roles
+        // 4. Deploy Oracle (Mock address for BSC testnet: use actual later)
+        address mockChainlinkFeed = address(0x123); 
+        TBillOracle oracle = new TBillOracle(mockChainlinkFeed);
+
+        // 5. Deploy Keeper (1 day interval)
+        TBillKeeper keeper = new TBillKeeper(address(tbill), address(oracle), 1 days);
+
+        // 6. Grant roles
         tbill.grantRole(tbill.MINTER_ROLE(), address(vault));
+        tbill.grantRole(tbill.ORACLE_ROLE(), address(keeper));
 
         vm.stopBroadcast();
     }
