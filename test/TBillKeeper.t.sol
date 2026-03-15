@@ -35,24 +35,24 @@ contract TBillKeeperTest is Test {
         oracle = new TBillOracle(address(mockFeed));
         tbill = new TBillToken();
         keeper = new TBillKeeper(address(tbill), address(oracle), 1 days);
-        
+
         // Grant Oracle role to Keeper so it can update price
         tbill.grantRole(tbill.ORACLE_ROLE(), address(keeper));
     }
 
     function test_CheckUpkeep() public {
-        (bool upkeepNeeded, ) = keeper.checkUpkeep("");
+        (bool upkeepNeeded,) = keeper.checkUpkeep("");
         assertFalse(upkeepNeeded);
-        
+
         vm.warp(block.timestamp + 1 days + 1);
-        (bool upkeepNeeded2, ) = keeper.checkUpkeep("");
+        (bool upkeepNeeded2,) = keeper.checkUpkeep("");
         assertTrue(upkeepNeeded2);
     }
 
     function test_PerformUpkeep() public {
         vm.warp(block.timestamp + 1 days + 1);
         keeper.performUpkeep("");
-        
+
         // 105e6 * 10^(18-8) = 1.05e18
         assertEq(tbill.getAssetPrice(), 1.05e18);
     }
@@ -61,11 +61,11 @@ contract TBillKeeperTest is Test {
         vm.expectRevert("Interval not reached");
         keeper.performUpkeep("");
     }
-    
+
     function test_SetIntervalAndOracle() public {
         keeper.setUpdateInterval(2 days);
         assertEq(keeper.updateInterval(), 2 days);
-        
+
         keeper.setOracle(address(0x1));
         assertEq(address(keeper.tbillOracle()), address(0x1));
     }

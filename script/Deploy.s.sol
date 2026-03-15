@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract MockStablecoin is ERC20 {
     constructor() ERC20("Mock USD", "mUSD") {}
+
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
@@ -30,7 +31,7 @@ contract Deploy is Script {
         YieldVault vault = new YieldVault(address(stablecoin), address(tbill));
 
         // 4. Deploy Oracle (Mock address for BSC testnet: use actual later)
-        address mockChainlinkFeed = address(0x123); 
+        address mockChainlinkFeed = address(0x123);
         TBillOracle oracle = new TBillOracle(mockChainlinkFeed);
 
         // 5. Deploy Keeper (1 day interval)

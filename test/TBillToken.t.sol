@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // Mock Stablecoin for testing
 contract MockStablecoin is ERC20 {
     constructor() ERC20("Mock USD", "mUSD") {}
-    
+
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
     }
@@ -26,7 +26,7 @@ contract TBillTokenTest is Test {
 
     function setUp() public {
         vm.startPrank(admin);
-        
+
         stablecoin = new MockStablecoin();
         tbill = new TBillToken();
         vault = new YieldVault(address(stablecoin), address(tbill));
@@ -34,11 +34,11 @@ contract TBillTokenTest is Test {
         // Grant roles
         tbill.grantRole(tbill.MINTER_ROLE(), address(vault));
         tbill.grantRole(tbill.ORACLE_ROLE(), admin);
-        
+
         // Setup initial user state
         tbill.setWhitelist(user, true); // KYC the user
         stablecoin.mint(user, 10000 * 1e18); // Give user 10,000 mUSD
-        
+
         vm.stopPrank();
     }
 
@@ -56,32 +56,32 @@ contract TBillTokenTest is Test {
 
     function test_Deposit() public {
         vm.startPrank(user);
-        
+
         stablecoin.approve(address(vault), 1000 * 1e18);
         vault.deposit(1000 * 1e18);
-        
+
         // Price is 1e18, so 1000 mUSD = 1000 TBILL
         assertEq(tbill.balanceOf(user), 1000 * 1e18);
         assertEq(stablecoin.balanceOf(address(vault)), 1000 * 1e18);
-        
+
         vm.stopPrank();
     }
 
     function test_Withdraw() public {
         vm.startPrank(user);
-        
+
         // Deposit first
         stablecoin.approve(address(vault), 1000 * 1e18);
         vault.deposit(1000 * 1e18);
-        
+
         // Withdraw 500 TBILL
         tbill.approve(address(vault), 500 * 1e18);
         vault.withdraw(500 * 1e18);
-        
+
         // User should get 500 mUSD back, vault should have 500 mUSD remaining
         assertEq(tbill.balanceOf(user), 500 * 1e18);
         assertEq(stablecoin.balanceOf(address(vault)), 500 * 1e18);
-        
+
         vm.stopPrank();
     }
 
@@ -99,7 +99,7 @@ contract TBillTokenTest is Test {
         vm.startPrank(user);
         stablecoin.approve(address(vault), 1000 * 1e18);
         vault.deposit(1000 * 1e18);
-        
+
         // Transfer to non-whitelisted address should fail
         address user2 = address(0x3);
         vm.expectRevert("KYC required");
@@ -111,17 +111,17 @@ contract TBillTokenTest is Test {
         vm.startPrank(admin);
         vault.pause();
         vm.stopPrank();
-        
+
         vm.startPrank(user);
         stablecoin.approve(address(vault), 1000 * 1e18);
         vm.expectRevert("Pausable: paused");
         vault.deposit(1000 * 1e18);
         vm.stopPrank();
-        
+
         vm.startPrank(admin);
         vault.unpause();
         vm.stopPrank();
-        
+
         vm.startPrank(user);
         vault.deposit(1000 * 1e18);
         assertEq(tbill.balanceOf(user), 1000 * 1e18);

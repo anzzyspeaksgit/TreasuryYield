@@ -7,20 +7,14 @@ interface AggregatorV3Interface {
     function decimals() external view returns (uint8);
     function description() external view returns (string memory);
     function version() external view returns (uint256);
-    function getRoundData(uint80 _roundId) external view returns (
-        uint80 roundId,
-        int256 answer,
-        uint256 startedAt,
-        uint256 updatedAt,
-        uint80 answeredInRound
-    );
-    function latestRoundData() external view returns (
-        uint80 roundId,
-        int256 answer,
-        uint256 startedAt,
-        uint256 updatedAt,
-        uint80 answeredInRound
-    );
+    function getRoundData(uint80 _roundId)
+        external
+        view
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+    function latestRoundData()
+        external
+        view
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
 }
 
 /**
@@ -29,10 +23,10 @@ interface AggregatorV3Interface {
  */
 contract TBillOracle is AccessControl {
     AggregatorV3Interface public priceFeed;
-    
+
     // In case there isn't a direct T-Bill price feed, we might use a combination
     // or a specialized RWA oracle. For demo purposes, we connect to a standard Chainlink feed.
-    
+
     event PriceFeedUpdated(address oldFeed, address newFeed);
 
     constructor(address _priceFeed) {
@@ -64,16 +58,16 @@ contract TBillOracle is AccessControl {
             /*uint80 answeredInRound*/
         ) = priceFeed.latestRoundData();
         require(price > 0, "Invalid oracle price");
-        
+
         uint8 decimals = priceFeed.decimals();
-        
+
         // Normalize to 18 decimals
         if (decimals < 18) {
             return uint256(price) * (10 ** (18 - decimals));
         } else if (decimals > 18) {
             return uint256(price) / (10 ** (decimals - 18));
         }
-        
+
         return uint256(price);
     }
 }

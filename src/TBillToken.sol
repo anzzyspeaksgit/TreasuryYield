@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 contract TBillToken is BaseRWA {
     uint256 private currentPrice; // Fixed 18 decimals, USD value of 1 TBILL token
     uint256 public yieldRate; // APY in basis points (e.g. 500 = 5.00%)
-    
+
     // Custom events
     event YieldRateUpdated(uint256 oldRate, uint256 newRate);
     event PriceUpdated(uint256 oldPrice, uint256 newPrice);

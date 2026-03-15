@@ -18,7 +18,7 @@ interface AutomationCompatibleInterface {
 contract TBillKeeper is AutomationCompatibleInterface, Ownable {
     TBillToken public tbillToken;
     TBillOracle public tbillOracle;
-    
+
     uint256 public updateInterval;
     uint256 public lastTimeStamp;
 
@@ -29,15 +29,30 @@ contract TBillKeeper is AutomationCompatibleInterface, Ownable {
         lastTimeStamp = block.timestamp;
     }
 
-    function checkUpkeep(bytes calldata /* checkData */) external view override returns (bool upkeepNeeded, bytes memory /* performData */) {
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (
+            bool upkeepNeeded,
+            bytes memory /* performData */
+        )
+    {
         upkeepNeeded = (block.timestamp - lastTimeStamp) >= updateInterval;
         return (upkeepNeeded, "");
     }
 
-    function performUpkeep(bytes calldata /* performData */) external override {
+    function performUpkeep(
+        bytes calldata /* performData */
+    )
+        external
+        override
+    {
         require((block.timestamp - lastTimeStamp) >= updateInterval, "Interval not reached");
         lastTimeStamp = block.timestamp;
-        
+
         uint256 latestPrice = tbillOracle.getLatestPrice();
         tbillToken.updatePrice(latestPrice);
     }
