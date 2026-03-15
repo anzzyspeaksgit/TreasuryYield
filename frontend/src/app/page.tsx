@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { motion } from "framer-motion";
 import { YieldChart } from "@/components/YieldChart";
 
 import { 
@@ -91,6 +92,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-neutral-950 text-white p-8">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
       <nav className="flex justify-between items-center mb-12 max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
           TreasuryYield
@@ -201,6 +203,7 @@ export default function Home() {
         </div>
 
       </div>
+          </motion.div>
     </main>
   );
 }
