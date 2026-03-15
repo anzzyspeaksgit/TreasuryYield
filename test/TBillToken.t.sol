@@ -84,4 +84,26 @@ contract TBillTokenTest is Test {
         
         vm.stopPrank();
     }
+
+    function test_YieldRate() public {
+        vm.prank(admin);
+        tbill.setYieldRate(500); // 5%
+        assertEq(tbill.yieldRate(), 500);
+    }
+
+    function test_CollateralizationRatio() public {
+        assertEq(tbill.getCollateralizationRatio(), 10000);
+    }
+
+    function test_RevertIf_UnwhitelistedTransfer() public {
+        vm.startPrank(user);
+        stablecoin.approve(address(vault), 1000 * 1e18);
+        vault.deposit(1000 * 1e18);
+        
+        // Transfer to non-whitelisted address should fail
+        address user2 = address(0x3);
+        vm.expectRevert("KYC required");
+        tbill.transfer(user2, 500 * 1e18);
+        vm.stopPrank();
+    }
 }
