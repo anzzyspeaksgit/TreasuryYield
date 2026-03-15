@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { YieldChart } from "@/components/YieldChart";
 
 import { 
   TBILL_TOKEN_ADDRESS, 
@@ -21,14 +22,15 @@ import {
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const [amount, setAmount] = useState("");
+  const [depositAmount, setDepositAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
   
-  // Hooks for reading
+  // Reads
   const { data: tbillBalance } = useReadContract({
     address: TBILL_TOKEN_ADDRESS,
     abi: TBILL_TOKEN_ABI,
     functionName: "balanceOf",
-    args: [address as `0x${string}`],
+    args: address ? [address as `0x${string}`] : undefined,
   });
 
   const { data: assetPrice } = useReadContract({
@@ -42,6 +44,46 @@ export default function Home() {
     abi: TBILL_TOKEN_ABI,
     functionName: "yieldRate",
   });
+
+  const { writeContractAsync } = useWriteContract();
+
+  const handleDeposit = async () => {
+    if (!depositAmount || !address) return;
+    try {
+      const amountParsed = parseUnits(depositAmount, 18); // assuming 18 dec
+      await writeContractAsync({
+        address: STABLECOIN_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [YIELD_VAULT_ADDRESS, amountParsed],
+      });
+      await writeContractAsync({
+        address: YIELD_VAULT_ADDRESS,
+        abi: YIELD_VAULT_ABI,
+        functionName: "deposit",
+        args: [amountParsed],
+      });
+      setDepositAmount("");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || !address) return;
+    try {
+      const amountParsed = parseUnits(withdrawAmount, 18);
+      await writeContractAsync({
+        address: YIELD_VAULT_ADDRESS,
+        abi: YIELD_VAULT_ABI,
+        functionName: "withdraw",
+        args: [amountParsed],
+      });
+      setWithdrawAmount("");
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const displayBalance = tbillBalance ? formatUnits(tbillBalance as bigint, 18) : "0.00";
   const displayPrice = assetPrice ? formatUnits(assetPrice as bigint, 18) : "1.00";
@@ -88,6 +130,16 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="bg-neutral-900 border-neutral-800">
+            <CardHeader>
+              <CardTitle className="text-neutral-200">Historical APY</CardTitle>
+              <CardDescription className="text-neutral-400">Trailing 6-month Treasury Bill yields</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <YieldChart />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column: Interaction */}
@@ -111,11 +163,15 @@ export default function Home() {
                       id="deposit-amount" 
                       placeholder="0.00" 
                       className="bg-neutral-950 border-neutral-800 text-white"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
                     />
                   </div>
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" disabled={!isConnected || !amount}>
+                  <Button 
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" 
+                    disabled={!isConnected || !depositAmount}
+                    onClick={handleDeposit}
+                  >
                     Approve & Deposit
                   </Button>
                 </TabsContent>
@@ -127,9 +183,15 @@ export default function Home() {
                       id="withdraw-amount" 
                       placeholder="0.00" 
                       className="bg-neutral-950 border-neutral-800 text-white"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
                     />
                   </div>
-                  <Button className="w-full bg-neutral-100 hover:bg-white text-neutral-950" disabled={!isConnected}>
+                  <Button 
+                    className="w-full bg-neutral-100 hover:bg-white text-neutral-950" 
+                    disabled={!isConnected || !withdrawAmount}
+                    onClick={handleWithdraw}
+                  >
                     Withdraw Stablecoins
                   </Button>
                 </TabsContent>
