@@ -155,4 +155,24 @@ contract TBillTokenTest is Test {
         assertEq(stablecoin.balanceOf(address(vault)), depositAmount - withdrawAmount);
         vm.stopPrank();
     }
+
+    function test_RescueTokens() public {
+        MockStablecoin randomToken = new MockStablecoin();
+        randomToken.mint(address(vault), 1000 * 1e18);
+
+        uint256 adminBalBefore = randomToken.balanceOf(admin);
+        
+        vm.prank(admin);
+        vault.rescueTokens(address(randomToken), admin, 1000 * 1e18);
+
+        assertEq(randomToken.balanceOf(admin), adminBalBefore + 1000 * 1e18);
+        assertEq(randomToken.balanceOf(address(vault)), 0);
+    }
+    
+    function test_RevertIf_RescueStablecoin() public {
+        vm.startPrank(admin);
+        vm.expectRevert("Cannot rescue underlying stablecoin");
+        vault.rescueTokens(address(stablecoin), admin, 1000 * 1e18);
+        vm.stopPrank();
+    }
 }

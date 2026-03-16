@@ -29,3 +29,7 @@ The main entry point for user interaction.
 ### `pause()` / `unpause()`
 - **Access**: `PAUSER_ROLE`
 - **Description**: Emergency toggle to halt all deposits and withdrawals.
+
+### `rescueTokens(address token, address to, uint256 amount)`
+- **Access**: `DEFAULT_ADMIN_ROLE`
+- **Description**: Recovers arbitrary ERC20 tokens mistakenly sent to the vault. Explicitly reverts if the token is the underlying stablecoin to protect user funds.

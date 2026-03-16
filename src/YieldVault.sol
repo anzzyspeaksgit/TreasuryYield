@@ -86,4 +86,16 @@ contract YieldVault is AccessControl, ReentrancyGuard, Pausable {
     function unpause() external onlyRole(PAUSER_ROLE) {
         _unpause();
     }
+
+    /**
+     * @notice Rescues ERC20 tokens sent by mistake to the vault
+     * @param token Address of the token to rescue
+     * @param to Address to send the tokens to
+     * @param amount Amount to rescue
+     */
+    function rescueTokens(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(token != address(stablecoin), "Cannot rescue underlying stablecoin");
+        require(to != address(0), "Invalid recipient");
+        IERC20(token).safeTransfer(to, amount);
+    }
 }
