@@ -26,6 +26,12 @@ The main entry point for user interaction.
 - **Description**: Users burn their `TBILL` shares. The vault computes their appreciated value based on `TBillToken.getAssetPrice()` and returns the appropriate amount of `STABLECOIN`.
 - **Modifiers**: `nonReentrant`, `whenNotPaused`
 
+### `previewDeposit(uint256 amount)`
+- **Description**: View function predicting how many TBILL shares will be minted.
+
+### `previewWithdraw(uint256 shares)`
+- **Description**: View function predicting how much STABLECOIN will be returned for burning TBILL.
+
 ### `pause()` / `unpause()`
 - **Access**: `PAUSER_ROLE`
 - **Description**: Emergency toggle to halt all deposits and withdrawals.
