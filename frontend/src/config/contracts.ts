@@ -10,7 +10,9 @@ export const TBILL_TOKEN_ABI = [
 
 export const YIELD_VAULT_ABI = [
   "function deposit(uint256 amount) external",
-  "function withdraw(uint256 shares) external"
+  "function previewDeposit(uint256 amount) view returns (uint256)",
+  "function withdraw(uint256 shares) external",
+  "function previewWithdraw(uint256 shares) view returns (uint256)"
 ];
 
 export const ERC20_ABI = [
