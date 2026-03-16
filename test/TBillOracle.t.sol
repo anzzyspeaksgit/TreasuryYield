@@ -57,4 +57,22 @@ contract TBillOracleTest is Test {
         oracle.updatePriceFeed(address(newFeed));
         assertEq(oracle.getLatestPrice(), 2e18);
     }
+
+    function test_GetLatestPrice_GreaterDecimals() public {
+        MockAggregator newFeed = new MockAggregator(3e20, 20);
+        oracle.updatePriceFeed(address(newFeed));
+        assertEq(oracle.getLatestPrice(), 3e18); // 3e20 / 10^2 = 3e18
+    }
+
+    function test_GetLatestPrice_NegativePriceRevert() public {
+        MockAggregator newFeed = new MockAggregator(-1e8, 8);
+        oracle.updatePriceFeed(address(newFeed));
+        vm.expectRevert("Invalid oracle price");
+        oracle.getLatestPrice();
+    }
+
+    function test_UpdatePriceFeed_ZeroAddressRevert() public {
+        vm.expectRevert("Invalid feed address");
+        oracle.updatePriceFeed(address(0));
+    }
 }
