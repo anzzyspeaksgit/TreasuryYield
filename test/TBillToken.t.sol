@@ -127,4 +127,32 @@ contract TBillTokenTest is Test {
         assertEq(tbill.balanceOf(user), 1000 * 1e18);
         vm.stopPrank();
     }
+
+    function testFuzz_Deposit(uint256 amount) public {
+        vm.assume(amount > 0 && amount <= 10000 * 1e18);
+
+        vm.startPrank(user);
+        stablecoin.approve(address(vault), amount);
+        vault.deposit(amount);
+
+        assertEq(tbill.balanceOf(user), amount);
+        assertEq(stablecoin.balanceOf(address(vault)), amount);
+        vm.stopPrank();
+    }
+
+    function testFuzz_Withdraw(uint256 depositAmount, uint256 withdrawAmount) public {
+        vm.assume(depositAmount > 0 && depositAmount <= 10000 * 1e18);
+        vm.assume(withdrawAmount > 0 && withdrawAmount <= depositAmount);
+
+        vm.startPrank(user);
+        stablecoin.approve(address(vault), depositAmount);
+        vault.deposit(depositAmount);
+
+        tbill.approve(address(vault), withdrawAmount);
+        vault.withdraw(withdrawAmount);
+
+        assertEq(tbill.balanceOf(user), depositAmount - withdrawAmount);
+        assertEq(stablecoin.balanceOf(address(vault)), depositAmount - withdrawAmount);
+        vm.stopPrank();
+    }
 }
