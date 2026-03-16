@@ -1,3 +1,4 @@
 [profile.default]
 remappings = ["@openzeppelin/=node_modules/@openzeppelin/", "shared/=../../shared/"]
 fs_permissions = [{ access = "read", path = "../../" }]
+gas_reports = ["*"]
