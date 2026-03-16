@@ -46,6 +46,21 @@ export default function Home() {
     functionName: "yieldRate",
   });
 
+
+  const { data: previewedShares } = useReadContract({
+    address: YIELD_VAULT_ADDRESS,
+    abi: YIELD_VAULT_ABI,
+    functionName: "previewDeposit",
+    args: depositAmount ? [parseUnits(depositAmount, 18)] : undefined,
+  });
+
+  const { data: previewedTokens } = useReadContract({
+    address: YIELD_VAULT_ADDRESS,
+    abi: YIELD_VAULT_ABI,
+    functionName: "previewWithdraw",
+    args: withdrawAmount ? [parseUnits(withdrawAmount, 18)] : undefined,
+  });
+
   const { writeContractAsync } = useWriteContract();
 
   const handleDeposit = async () => {
@@ -159,6 +174,7 @@ export default function Home() {
                 </TabsList>
                 
                 <TabsContent value="deposit" className="space-y-4 mt-6">
+                  
                   <div className="space-y-2">
                     <Label htmlFor="deposit-amount" className="text-neutral-300">Amount (USDC)</Label>
                     <Input 
@@ -168,7 +184,13 @@ export default function Home() {
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
                     />
+                    {Boolean(previewedShares) && depositAmount && (
+                      <p className="text-xs text-neutral-400 mt-1">
+                        You will receive approx. <span className="text-emerald-400 font-medium">{formatUnits(previewedShares as bigint, 18)} TBILL</span>
+                      </p>
+                    )}
                   </div>
+
                   <Button 
                     className="w-full bg-emerald-600 hover:bg-emerald-500 text-white" 
                     disabled={!isConnected || !depositAmount}
@@ -179,6 +201,7 @@ export default function Home() {
                 </TabsContent>
                 
                 <TabsContent value="withdraw" className="space-y-4 mt-6">
+                  
                   <div className="space-y-2">
                     <Label htmlFor="withdraw-amount" className="text-neutral-300">Shares (TBILL)</Label>
                     <Input 
@@ -188,7 +211,13 @@ export default function Home() {
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
                     />
+                    {Boolean(previewedTokens) && withdrawAmount && (
+                      <p className="text-xs text-neutral-400 mt-1">
+                        You will receive approx. <span className="text-emerald-400 font-medium">{formatUnits(previewedTokens as bigint, 18)} USDC</span>
+                      </p>
+                    )}
                   </div>
+
                   <Button 
                     className="w-full bg-neutral-100 hover:bg-white text-neutral-950" 
                     disabled={!isConnected || !withdrawAmount}
