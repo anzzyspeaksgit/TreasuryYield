@@ -98,4 +98,24 @@ contract YieldVault is AccessControl, ReentrancyGuard, Pausable {
         require(to != address(0), "Invalid recipient");
         IERC20(token).safeTransfer(to, amount);
     }
+
+    /**
+     * @notice Preview the amount of TBILL shares minted for a given deposit amount
+     * @param amount Amount of stablecoins
+     * @return Amount of TBILL shares
+     */
+    function previewDeposit(uint256 amount) public view returns (uint256) {
+        uint256 price = tbillToken.getAssetPrice();
+        return (amount * 1e18) / price;
+    }
+
+    /**
+     * @notice Preview the amount of stablecoins returned for a given amount of TBILL shares
+     * @param shares Amount of TBILL shares
+     * @return Amount of stablecoins
+     */
+    function previewWithdraw(uint256 shares) public view returns (uint256) {
+        uint256 price = tbillToken.getAssetPrice();
+        return (shares * price) / 1e18;
+    }
 }
